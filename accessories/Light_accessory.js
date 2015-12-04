@@ -2,13 +2,14 @@ var Accessory = require('../').Accessory;
 var Service = require('../').Service;
 var Characteristic = require('../').Characteristic;
 var uuid = require('../').uuid;
+var ble = require('./ble.js');
 
 // here's a fake hardware device that we'll expose to HomeKit
 var FAKE_LIGHT = {
   powerOn: false,
   brightness: 100, // percentage
-  
-  setPowerOn: function(on) { 
+
+  setPowerOn: function(on) {
     console.log("Turning the light %s!", on ? "on" : "off");
     FAKE_LIGHT.powerOn = on;
   },
@@ -33,6 +34,8 @@ var light = exports.accessory = new Accessory('Light', lightUUID);
 light.username = "1A:2B:3C:4D:5E:FF";
 light.pincode = "031-45-154";
 
+console.log("Light Pair PinCode:"+light.pincode);
+
 // set some basic properties (these values are arbitrary and setting them is optional)
 light
   .getService(Service.AccessoryInformation)
@@ -49,10 +52,15 @@ light.on('identify', function(paired, callback) {
 // Add the actual Lightbulb Service and listen for change events from iOS.
 // We can see the complete list of Services and Characteristics in `lib/gen/HomeKitTypes.js`
 light
-  .addService(Service.Lightbulb, "Fake Light") // services exposed to the user should have "names" like "Fake Light" for us
+  .addService(Service.Lightbulb, "YeeLight") // services exposed to the user should have "names" like "Fake Light" for us
   .getCharacteristic(Characteristic.On)
   .on('set', function(value, callback) {
     FAKE_LIGHT.setPowerOn(value);
+    if(value==false) {
+      ble.TurnOff();
+    }else {
+      ble.TurnOn();
+    }
     callback(); // Our fake Light is synchronous - this value has been successfully set
   });
 
@@ -62,13 +70,13 @@ light
   .getService(Service.Lightbulb)
   .getCharacteristic(Characteristic.On)
   .on('get', function(callback) {
-    
+
     // this event is emitted when you ask Siri directly whether your light is on or not. you might query
     // the light hardware itself to find this out, then call the callback. But if you take longer than a
     // few seconds to respond, Siri will give up.
-    
+
     var err = null; // in case there were any problems
-    
+
     if (FAKE_LIGHT.powerOn) {
       console.log("Are we on? Yes.");
       callback(err, true);
