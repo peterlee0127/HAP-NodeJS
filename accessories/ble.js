@@ -64,6 +64,9 @@ var allServices = [ CONTROL_UUID,
                     }); 
                 });   
             },300);
+            peripheral.on('disconnect', function(){
+                console.log("disconnect"+peripheral);
+            });
         }); 
     }
     
