@@ -66,33 +66,15 @@ var allServices = [ CONTROL_UUID,
             },300);
             peripheral.on('disconnect', function(){
                 console.log("disconnect"+peripheral);
+        		allDevices = [];
+				console.log("numberOfLight:"+allDevices.length);
+				setTimeout(function(){
+					xstartDiscover();				
+				},400);
             });
         }); 
     }
     
-             /* 
-                             var readChar=findForCharacters(device,STATUS_RESPONSE_UUID); 
-                               readChar.read(function(error, data) { 
-                            // data is a buffer 
-                            if(error){console.log(error); } 
-                            if(data) {console.log(data); } 
-                            }); 
-                            readChar.on('read', function(data, isNotification) { 
-                            if(data != undefined){ 
-                            console.log('current setting:', data + '%'); 
-                            } 
-                            }); 
-                            readChar.notify(true, function(error) { 
-                            if(error){ 
-                            console.log(error); 
-                            } 
-                            }); 
-                            var queryChar=findForCharacters(device,STATUS_QUERY_UUID_UUID); 
-                            queryChar.write(new Buffer('S'), false, function(error) { 
-                            if(error){console.log(error);} 
-                            }); 
-                            */ 
-
     exports.startDiscover = startDiscover;
 
     exports.disConnectAll = function disConnectAll(){
