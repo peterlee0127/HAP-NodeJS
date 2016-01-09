@@ -40,41 +40,40 @@ var allServices = [ CONTROL_UUID,
         }
     });
 
-    function startDiscover(){ 
-        noble.startScanning([SERVICE_UUID]); 
-        noble.on('discover', function(peripheral) { 
-            var macAddress = peripheral.uuid;// var rss = peripheral.rssi; 
-            var localName = peripheral.advertisement.localName;           
+    function startDiscover(){
+        noble.startScanning([SERVICE_UUID]);
+        noble.on('discover', function(peripheral) {
+            var macAddress = peripheral.uuid;// var rss = peripheral.rssi;
+            var localName = peripheral.advertisement.localName;
             if(localName!="Yeelight Blue II") {
                 return
             }
-            setTimeout(function(){            
-                peripheral.connect(function(error){ 
-                    if(error){console.log(error);} 
-                    peripheral.discoverServices([SERVICE_UUID], function(error, services) { 
-                        var deviceInformationService = services[0]; 
-                        deviceInformationService.discoverCharacteristics(allServices, function(error, characteristics) { 
-                            var device = []; 
-                            for (var i in characteristics) { 
-                                device.push(characteristics[i]); 
-                            } 
-                            allDevices.push(device); 
-                   
-                        }); 
-                    }); 
-                });   
+            setTimeout(function(){
+                peripheral.connect(function(error){
+                    if(error){console.log(error);}
+                    peripheral.discoverServices([SERVICE_UUID], function(error, services) {
+                        var deviceInformationService = services[0];
+                        deviceInformationService.discoverCharacteristics(allServices, function(error, characteristics) {
+                            var device = [];
+                            for (var i in characteristics) {
+                                device.push(characteristics[i]);
+                            }
+                            allDevices.push(device);
+
+                        });
+                    });
+                });
             },300);
             peripheral.on('disconnect', function(){
                 console.log("disconnect"+peripheral);
         		allDevices = [];
-				console.log("numberOfLight:"+allDevices.length);
 				setTimeout(function(){
-					xstartDiscover();				
+					xstartDiscover(); // will crash here,for trick rescan,use nodejs forever module
 				},400);
             });
-        }); 
+        });
     }
-    
+
     exports.startDiscover = startDiscover;
 
     exports.disConnectAll = function disConnectAll(){
@@ -125,7 +124,7 @@ var allServices = [ CONTROL_UUID,
                });
             //CLTMP 6500,45,,,,,,%
         }
-	
+
 	}
     exports.TurnOff = function turnOff(){
         for(var index in allDevices){
