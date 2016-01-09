@@ -6,7 +6,7 @@ var ble = require('./ble.js');
 
 // here's a fake hardware device that we'll expose to HomeKit
 var LightBulb = {
-  powerOn: yes,
+  powerOn: true,
   brightness: 100, // percentage
   hue:360,
   saturation:100,
