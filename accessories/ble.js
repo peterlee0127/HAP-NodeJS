@@ -108,21 +108,31 @@ var allServices = [ CONTROL_UUID,
                chcharacter.write(new Buffer("CLTMP 6500,60,,,,%"), false, function(error) {
                  if(error){console.log(error);}
                });
-
             //CLTMP 6500,45,,,,,,%
         }
-    	startDiscover();
 	};
 
-
+	exports.changeBrightness = function changeBrightness(brightness) {
+		var command = util.format("CLTMP 6500,%d",brightness);
+		for(var i=command.length; i<17; i++) {
+			command+=',';
+		}
+		command+='%';
+	     for(var index in allDevices){
+            var chcharacter=findForCharacters(allDevices[index],CONTROL_UUID);
+               chcharacter.write(new Buffer(command), false, function(error) {
+                 if(error){console.log(error);}
+               });
+            //CLTMP 6500,45,,,,,,%
+        }
+	
+	}
     exports.TurnOff = function turnOff(){
         for(var index in allDevices){
             var chcharacter=findForCharacters(allDevices[index],CONTROL_UUID);
             controlLight(chcharacter,null,null,null,0);
         }
-    	startDiscover();
 	};
-
 
     exports.changeColor = function changeColor(red,green,blue,brightness){
         for(var index in allDevices){

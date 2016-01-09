@@ -96,5 +96,6 @@ light
   })
   .on('set', function(value, callback) {
     FAKE_LIGHT.setBrightness(value);
+  	ble.changeBrightness(value); 
     callback();
   })
