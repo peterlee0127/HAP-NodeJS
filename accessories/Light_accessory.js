@@ -6,19 +6,19 @@ var ble = require('./ble.js');
 
 // here's a fake hardware device that we'll expose to HomeKit
 var LightBulb = {
-  powerOn: false,
+  powerOn: yes,
   brightness: 100, // percentage
-  hue:0,
+  hue:360,
   saturation:100,
   setHue: function(value) {
     // console.log("set light Hue:"+value);
-    console.log(convertToRGB());
     LightBulb.hue = value;
+    changeColor();
   },
   setSaturation: function(value) {
     // console.log("set light Saturation:"+value);
     LightBulb.saturation = value;
-    console.log(convertToRGB());
+    changeColor();
   },
   setPowerOn: function(on) {
     // console.log("Turning the light %s!", on ? "on" : "off");
@@ -27,15 +27,18 @@ var LightBulb = {
   setBrightness: function(brightness) {
     // console.log("Setting light brightness to %s", brightness);
     LightBulb.brightness = brightness;
+    changeColor();
   },
   identify: function() {
     console.log("Identify the light!");
   }
 }
 
-function convertToRGB() {
-  return hslToRgb(LightBulb.hue/360,LightBulb.saturation/100,LightBulb.brightness/100);
+function changeColor() {
+  var color = convertToRGB();
+  ble.changeColor(color[0],color[1],color[2],LightBulb.brightness);
 }
+
 
 // Generate a consistent UUID for our light Accessory that will remain the same even when
 // restarting our server. We use the `uuid.generate` helper function to create a deterministic
@@ -137,6 +140,9 @@ light
         callback();
       })
 
+    function convertToRGB() {
+      return hslToRgbLightBulb.hue/360,LightBulb.saturation/100,LightBulb.brightness/100);
+    }
 
       /**
  * Converts an HSL color value to RGB. Conversion formula

@@ -1,6 +1,7 @@
 var noble = require('noble');
 var util = require('util');
 
+require('events').EventEmitter.prototype._maxListeners = 100;
 
 var SERVICE_UUID                = 'fff0';  // for yeeLight service
 
@@ -65,11 +66,12 @@ var allServices = [ CONTROL_UUID,
                 });
             },300);
             peripheral.on('disconnect', function(){
-                console.log("disconnect"+peripheral);
-        		allDevices = [];
-				setTimeout(function(){
-					xstartDiscover(); // will crash here,for trick rescan,use nodejs forever module
-				},400);
+                console.log("peripheral disconnect:o "+peripheral);
+                    process.exit(0);
+        		    allDevices = [];
+  				      setTimeout(function(){
+  					      xstartDiscover(); // will crash here,for trick rescan,use nodejs forever module
+  				      },400);
             });
         });
     }
