@@ -141,7 +141,7 @@ light
       })
 
     function convertToRGB() {
-      return hslToRgbLightBulb.hue/360,LightBulb.saturation/100,LightBulb.brightness/100);
+        return hslToRgb(LightBulb.hue/360,LightBulb.saturation/100,LightBulb.brightness/100);
     }
 
       /**
