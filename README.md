@@ -1,3 +1,14 @@
+<h1>HAP-YeeLight</h1>
+
+This Project is fork from HAP-NodeJS.
+
+Binding with YeeLight Blue 2.
+
+
+
+<hr>
+<h3>Original README.md</h3>
+
 HAP-NodeJS
 ==========
 
