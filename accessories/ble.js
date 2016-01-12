@@ -66,11 +66,12 @@ var allServices = [ CONTROL_UUID,
                 });
             },300);
             peripheral.on('disconnect', function(){
-                console.log("peripheral disconnect:o "+peripheral);
-        		    allDevices = [];
-  				      setTimeout(function(){
-  					      xstartDiscover(); // will crash here,for trick rescan,use nodejs forever module
-  				      },400);
+                console.log("peripheral disconnect:"+peripheral);
+        		allDevices = [];
+  			    setTimeout(function(){
+                    noble.stopScanning();
+  				    startDiscover(); // will crash here,for trick rescan,use nodejs forever module
+  			    },100);
             });
         });
     }
