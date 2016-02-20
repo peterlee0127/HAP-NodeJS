@@ -1,0 +1,3 @@
+[submodule "yeelight"]
+	path = yeelight
+	url = https://github.com/peterlee0127/YeeLight-Blue-2.git
