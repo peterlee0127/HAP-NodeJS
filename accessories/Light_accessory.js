@@ -4,6 +4,7 @@ var Characteristic = require('../').Characteristic;
 var uuid = require('../').uuid;
 var ble = require('./ble.js');
 
+<<<<<<< HEAD
 // here's a fake hardware device that we'll expose to HomeKit
 var LightBulb = {
   powerOn: true,
@@ -28,9 +29,65 @@ var LightBulb = {
     // console.log("Setting light brightness to %s", brightness);
     LightBulb.brightness = brightness;
     changeColor();
+=======
+var LightController = {
+  name: "Simple Light", //name of accessory
+  pincode: "031-45-154",
+  username: "FA:3C:ED:5A:1A:1A", // MAC like address used by HomeKit to differentiate accessories. 
+  manufacturer: "HAP-NodeJS", //manufacturer (optional)
+  model: "v1.0", //model (optional)
+  serialNumber: "A12S345KGB", //serial number (optional)
+
+  power: false, //curent power status
+  brightness: 100, //current brightness
+  hue: 0, //current hue
+  saturation: 0, //current saturation
+
+  outputLogs: false, //output logs
+
+  setPower: function(status) { //set power of accessory
+    if(this.outputLogs) console.log("Turning the '%s' %s", this.name, status ? "on" : "off");
+    this.power = status;
   },
-  identify: function() {
-    console.log("Identify the light!");
+
+  getPower: function() { //get power of accessory
+    if(this.outputLogs) console.log("'%s' is %s.", this.name, this.power ? "on" : "off");
+    return this.power ? true : false;
+  },
+
+  setBrightness: function(brightness) { //set brightness
+    if(this.outputLogs) console.log("Setting '%s' brightness to %s", this.name, brightness);
+    this.brightness = brightness;
+  },
+
+  getBrightness: function() { //get brightness
+    if(this.outputLogs) console.log("'%s' brightness is %s", this.name, this.brightness);
+    return this.brightness;
+  },
+
+  setSaturation: function(saturation) { //set brightness
+    if(this.outputLogs) console.log("Setting '%s' saturation to %s", this.name, saturation);
+    this.saturation = saturation;
+>>>>>>> 1cbf0352f44d9cca696267ec592478afcac3bd00
+  },
+
+  getSaturation: function() { //get brightness
+    if(this.outputLogs) console.log("'%s' saturation is %s", this.name, this.saturation);
+    return this.saturation;
+  },
+
+  setHue: function(hue) { //set brightness
+    if(this.outputLogs) console.log("Setting '%s' hue to %s", this.name, hue);
+    this.hue = hue;
+  },
+
+  getHue: function() { //get hue
+    if(this.outputLogs) console.log("'%s' hue is %s", this.name, this.hue);
+    return this.hue;
+  },
+
+  identify: function() { //identify the accessory
+    if(this.outputLogs) console.log("Identify the '%s'", this.name);
   }
 }
 
@@ -43,20 +100,26 @@ function changeColor() {
 // Generate a consistent UUID for our light Accessory that will remain the same even when
 // restarting our server. We use the `uuid.generate` helper function to create a deterministic
 // UUID based on an arbitrary "namespace" and the word "light".
-var lightUUID = uuid.generate('hap-nodejs:accessories:light');
+var lightUUID = uuid.generate('hap-nodejs:accessories:light' + LightController.name);
 
-// This is the Accessory that we'll return to HAP-NodeJS that represents our fake light.
-var light = exports.accessory = new Accessory('Light', lightUUID);
+// This is the Accessory that we'll return to HAP-NodeJS that represents our light.
+var lightAccessory = exports.accessory = new Accessory(LightController.name, lightUUID);
 
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
+<<<<<<< HEAD
 light.username = "1A:2B:4C:3D:6E:FF";
 light.pincode = "031-45-154";
+=======
+lightAccessory.username = LightController.username;
+lightAccessory.pincode = LightController.pincode;
+>>>>>>> 1cbf0352f44d9cca696267ec592478afcac3bd00
 
 console.log("Light Pair PinCode:"+light.pincode);
 
 // set some basic properties (these values are arbitrary and setting them is optional)
-light
+lightAccessory
   .getService(Service.AccessoryInformation)
+<<<<<<< HEAD
   .setCharacteristic(Characteristic.Manufacturer, "YeeLight")
   .setCharacteristic(Characteristic.Model, "Rev-1")
   .setCharacteristic(Characteristic.SerialNumber, "A1S2NASF88EW");
@@ -66,10 +129,21 @@ light
 light.on('identify', function(paired, callback) {
   LightBulb.identify();
   callback(); // success
+=======
+    .setCharacteristic(Characteristic.Manufacturer, LightController.manufacturer)
+    .setCharacteristic(Characteristic.Model, LightController.model)
+    .setCharacteristic(Characteristic.SerialNumber, LightController.serialNumber);
+
+// listen for the "identify" event for this Accessory
+lightAccessory.on('identify', function(paired, callback) {
+  LightController.identify();
+  callback();
+>>>>>>> 1cbf0352f44d9cca696267ec592478afcac3bd00
 });
 
 // Add the actual Lightbulb Service and listen for change events from iOS.
 // We can see the complete list of Services and Characteristics in `lib/gen/HomeKitTypes.js`
+<<<<<<< HEAD
 light
   .addService(Service.Lightbulb, "YeeLight") // services exposed to the user should have "names" like "Fake Light" for us
   .getCharacteristic(Characteristic.On)
@@ -82,13 +156,25 @@ light
     }
     callback(); // Our fake Light is synchronous - this value has been successfully set
   });
-
-// We want to intercept requests for our current power state so we can query the hardware itself instead of
-// allowing HAP-NodeJS to return the cached Characteristic.value.
-light
-  .getService(Service.Lightbulb)
+=======
+lightAccessory
+  .addService(Service.Lightbulb, LightController.name) // services exposed to the user should have "names" like "Light" for this case
   .getCharacteristic(Characteristic.On)
+  .on('set', function(value, callback) {
+    LightController.setPower(value);
+>>>>>>> 1cbf0352f44d9cca696267ec592478afcac3bd00
+
+    // Our light is synchronous - this value has been successfully set
+    // Invoke the callback when you finished processing the request
+    // If it's going to take more than 1s to finish the request, try to invoke the callback
+    // after getting the request instead of after finishing it. This avoids blocking other
+    // requests from HomeKit.
+    callback();
+  })
+  // We want to intercept requests for our current power state so we can query the hardware itself instead of
+  // allowing HAP-NodeJS to return the cached Characteristic.value.
   .on('get', function(callback) {
+<<<<<<< HEAD
     // this event is emitted when you ask Siri directly whether your light is on or not. you might query
     // the light hardware itself to find this out, then call the callback. But if you take longer than a
     // few seconds to respond, Siri will give up.
@@ -103,16 +189,53 @@ light
       console.log("Are we on? No.");
       callback(err, false);
     }
+=======
+    callback(null, LightController.getPower());
+>>>>>>> 1cbf0352f44d9cca696267ec592478afcac3bd00
   });
 
+// To inform HomeKit about changes occurred outside of HomeKit (like user physically turn on the light)
+// Please use Characteristic.updateValue
+// 
+// lightAccessory
+//   .getService(Service.Lightbulb)
+//   .getCharacteristic(Characteristic.On)
+//   .updateValue(true);
+
 // also add an "optional" Characteristic for Brightness
-light
+lightAccessory
   .getService(Service.Lightbulb)
   .addCharacteristic(Characteristic.Brightness)
-  .on('get', function(callback) {
-    callback(null, LightBulb.brightness);
-  })
   .on('set', function(value, callback) {
+    LightController.setBrightness(value);
+    callback();
+  })
+  .on('get', function(callback) {
+<<<<<<< HEAD
+    callback(null, LightBulb.brightness);
+=======
+    callback(null, LightController.getBrightness());
+  });
+
+// also add an "optional" Characteristic for Saturation
+lightAccessory
+  .getService(Service.Lightbulb)
+  .addCharacteristic(Characteristic.Saturation)
+  .on('set', function(value, callback) {
+    LightController.setSaturation(value);
+    callback();
+>>>>>>> 1cbf0352f44d9cca696267ec592478afcac3bd00
+  })
+  .on('get', function(callback) {
+    callback(null, LightController.getSaturation());
+  });
+
+// also add an "optional" Characteristic for Hue
+lightAccessory
+  .getService(Service.Lightbulb)
+  .addCharacteristic(Characteristic.Hue)
+  .on('set', function(value, callback) {
+<<<<<<< HEAD
     LightBulb.setBrightness(value);
   	ble.changeBrightness(value);
     callback();
@@ -179,3 +302,11 @@ function hslToRgb(h, s, l){
 
     return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
+=======
+    LightController.setHue(value);
+    callback();
+  })
+  .on('get', function(callback) {
+    callback(null, LightController.getHue());
+  });
+>>>>>>> 1cbf0352f44d9cca696267ec592478afcac3bd00
