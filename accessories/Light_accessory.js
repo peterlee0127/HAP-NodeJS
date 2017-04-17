@@ -2,14 +2,12 @@ var Accessory = require('../').Accessory;
 var Service = require('../').Service;
 var Characteristic = require('../').Characteristic;
 var uuid = require('../').uuid;
-var ble = require('./../yeelight/ble.js')
-
-ble.startDiscover();
+var ble = require('./ble.js');
 
 var LightController = {
   name: "Simple Light", //name of accessory
   pincode: "031-45-154",
-  username: "FA:3C:ED:5A:1A:1A", // MAC like address used by HomeKit to differentiate accessories. 
+  username: "FA:3C:ED:5A:1A:1B", // MAC like address used by HomeKit to differentiate accessories.
   manufacturer: "HAP-NodeJS", //manufacturer (optional)
   model: "v1.0", //model (optional)
   serialNumber: "A12S345KGB", //serial number (optional)
@@ -18,11 +16,17 @@ var LightController = {
   brightness: 100, //current brightness
   hue: 0, //current hue
   saturation: 0, //current saturation
+
   outputLogs: true, //output logs
 
   setPower: function(status) { //set power of accessory
     if(this.outputLogs) console.log("Turning the '%s' %s", this.name, status ? "on" : "off");
     this.power = status;
+    if(status){
+        ble.TurnOn();
+    }else{
+        ble.TurnOff();
+    }
   },
 
   getPower: function() { //get power of accessory
@@ -37,6 +41,7 @@ var LightController = {
 
   getBrightness: function() { //get brightness
     if(this.outputLogs) console.log("'%s' brightness is %s", this.name, this.brightness);
+    ble.changeBrightness(this.brightness);
     return this.brightness;
   },
 
@@ -97,7 +102,6 @@ lightAccessory
   .getCharacteristic(Characteristic.On)
   .on('set', function(value, callback) {
     LightController.setPower(value);
-
     // Our light is synchronous - this value has been successfully set
     // Invoke the callback when you finished processing the request
     // If it's going to take more than 1s to finish the request, try to invoke the callback
@@ -113,7 +117,7 @@ lightAccessory
 
 // To inform HomeKit about changes occurred outside of HomeKit (like user physically turn on the light)
 // Please use Characteristic.updateValue
-// 
+//
 // lightAccessory
 //   .getService(Service.Lightbulb)
 //   .getCharacteristic(Characteristic.On)
