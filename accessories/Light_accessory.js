@@ -5,7 +5,7 @@ var uuid = require('../').uuid;
 var ble = require('./ble.js');
 
 var LightController = {
-  name: "Simple Light", //name of accessory
+  name: "Room", //name of accessory
   pincode: "031-45-154",
   username: "FA:3C:ED:5A:1A:1B", // MAC like address used by HomeKit to differentiate accessories.
   manufacturer: "HAP-NodeJS", //manufacturer (optional)
@@ -24,6 +24,7 @@ var LightController = {
     this.power = status;
     if(status){
         ble.TurnOn();
+        ble.changeBrightness(100);
     }else{
         ble.TurnOff();
     }
@@ -36,18 +37,19 @@ var LightController = {
 
   setBrightness: function(brightness) { //set brightness
     if(this.outputLogs) console.log("Setting '%s' brightness to %s", this.name, brightness);
+    ble.changeBrightness(this.brightness);
     this.brightness = brightness;
   },
 
   getBrightness: function() { //get brightness
     if(this.outputLogs) console.log("'%s' brightness is %s", this.name, this.brightness);
-    ble.changeBrightness(this.brightness);
     return this.brightness;
   },
 
   setSaturation: function(saturation) { //set brightness
     if(this.outputLogs) console.log("Setting '%s' saturation to %s", this.name, saturation);
     this.saturation = saturation;
+    ble.changeColorHSL(this.hue,this.saturation);
   },
 
   getSaturation: function() { //get brightness
@@ -58,6 +60,7 @@ var LightController = {
   setHue: function(hue) { //set brightness
     if(this.outputLogs) console.log("Setting '%s' hue to %s", this.name, hue);
     this.hue = hue;
+    ble.changeColorHSL(this.hue,this.saturation);
   },
 
   getHue: function() { //get hue

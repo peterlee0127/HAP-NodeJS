@@ -67,7 +67,7 @@ var allServices = [ CONTROL_UUID,
             },300);
             peripheral.on('disconnect', function(){
                 console.log("peripheral disconnect:"+peripheral);
-        		allDevices = [];
+                allDevices = [];
   			    setTimeout(function(){
                     noble.stopScanning();
   				    startDiscover(); // will crash here,for trick rescan,use nodejs forever module
@@ -106,7 +106,7 @@ var allServices = [ CONTROL_UUID,
         for(var index in allDevices){
 
             var chcharacter=findForCharacters(allDevices[index],CONTROL_UUID);
-               chcharacter.write(new Buffer("CLTMP 6500,60,,,,%"), false, function(error) {
+               chcharacter.write(new Buffer("CLTMP 6500,100,,,%"), false, function(error) {
                  if(error){console.log(error);}
                });
             //CLTMP 6500,45,,,,,,%
@@ -135,13 +135,49 @@ var allServices = [ CONTROL_UUID,
         }
 	};
 
-    exports.changeColor = function changeColor(red,green,blue,brightness){
+    function hslToRgb(h, s, l){
+   //hue,saturation,light;
+    var r, g, b;
+
+    if(s == 0){
+        r = g = b = l; // achromatic
+    }else{
+        var hue2rgb = function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+
+       return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+
+
+
+    exports.changeColorRGB = function changeColorRGB(red,green,blue,brightness){
         for(var index in allDevices){
             var chcharacter=findForCharacters(allDevices[index],CONTROL_UUID);
             controlLight(chcharacter,red,green,blue,brightness);
         }
     };
 
+    exports.changeColorHSL = function changeColorHSL(h,s){
+        var color = hslToRgb(h/360,s/100,0.5);
+        for(var index in allDevices){
+            var chcharacter=findForCharacters(allDevices[index],CONTROL_UUID);
+            controlLight(chcharacter,color[0],color[1],color[2],100);
+        }
+    
+    }
 
     function controlLight(characteristics,red,green,blue,brightness){
         var command = util.format('%d,%d,%d,%d', red, green, blue, brightness);
