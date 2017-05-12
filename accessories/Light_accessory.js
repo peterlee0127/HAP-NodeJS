@@ -5,12 +5,12 @@ var uuid = require('../').uuid;
 var ble = require('./ble.js');
 
 var LightController = {
-  name: "Room", //name of accessory
+  name: "Light", //name of accessory
   pincode: "031-45-154",
-  username: "FA:3C:ED:5A:1A:1B", // MAC like address used by HomeKit to differentiate accessories.
+  username: "AA:3C:ED:5A:1A:1B", // MAC like address used by HomeKit to differentiate accessories.
   manufacturer: "HAP-NodeJS", //manufacturer (optional)
   model: "v1.0", //model (optional)
-  serialNumber: "A12S345KGB", //serial number (optional)
+  serialNumber: "A32S345KGB", //serial number (optional)
 
   power: false, //curent power status
   brightness: 100, //current brightness
