@@ -4,16 +4,15 @@ This Project is fork from HAP-NodeJS.
 
 HomeKit Server for iOS Device.
 
-Binding with YeeLight Blue 2 LightBulb.
+Binding with YeeLight Blue 2 Light Bulb.
 
 
 <img src="yeelight.jpg" width="100%"></img>
 
 
-
 <hr>
-<h3>Original README.md</h3>
-
+<h2>Project "HAP-NodeJS README.md"</h2>
+A
 HAP-NodeJS
 ==========
 
