@@ -18,6 +18,7 @@ var EFFECT_UUID                 = 'fffc';  // set the effect of color change
 
 var allDevices = [];
 var allPeripheral = [];
+var peripheralCount = 0;
 
 var allServices = [ CONTROL_UUID,
     DELAY_UUID,
@@ -36,7 +37,6 @@ var allServices = [ CONTROL_UUID,
     noble.on('stateChange', function(state) {
         if (state === 'poweredOn'){
             startDiscover();
-            console.log("startDiscover..");
         }
         else{
             // noble.stopScanning();
@@ -44,6 +44,7 @@ var allServices = [ CONTROL_UUID,
     });
 
     function startDiscover(){
+        console.log("startDiscover..");
         allPeripheral = [];
 	noble.startScanning([SERVICE_UUID]);
         noble.on('discover', function(peripheral) {
@@ -55,7 +56,17 @@ var allServices = [ CONTROL_UUID,
             setTimeout(function(){
                 peripheral.connect(function(error){
                     if(error){console.log(error);}
-                    	allPeripheral.push(peripheral);
+                    	peripheralCount++;
+			console.log("connected:"+peripheralCount+" "+peripheral.address);
+			var found = false;
+			for(var i=0;i<allPeripheral.length;i++){
+			  if(allPeripheral[i].address==peripheral.address){
+			 	found = true;
+			  }
+			}
+			if(!found){	
+				allPeripheral.push(peripheral);
+			}
 			peripheral.discoverServices([SERVICE_UUID], function(error, services) {
                         var deviceInformationService = services[0];
                         deviceInformationService.discoverCharacteristics(allServices, function(error, characteristics) {
@@ -70,20 +81,21 @@ var allServices = [ CONTROL_UUID,
                 });
             },300);
             peripheral.on('disconnect', function(){
-                console.log("peripheral disconnect:"+peripheral);
-                
+     		peripheralCount--;           
+                console.log("peripheral disconnect:"+peripheral.address+ "  connected:"+peripheralCount);
 		for(var i=0;i<allPeripheral.length;i++) {
 		  allPeripheral[i].disconnect(function(err){
-				console.log(err);
-			});
+		   });
 		}
+  			if(peripheralCount==0){	    
+            		 noble.stopScanning();
+				setTimeout(function(){
 		allPeripheral = [];
 		allDevices = [];
-  			    
-			setTimeout(function(){
-                   		 exit();
+  				console.log("restart");  
   				  startDiscover(); // will crash here,for trick rescan,use nodejs forever module
-  			  },400);
+			},3000);
+			}
             });
         });
     }
