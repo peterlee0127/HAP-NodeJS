@@ -56,8 +56,8 @@ var allServices = [ CONTROL_UUID,
             setTimeout(function(){
                 peripheral.connect(function(error){
                     if(error){console.log(error);}
-                    	peripheralCount++;
-			console.log("connected:"+peripheralCount+" "+peripheral.address);
+                
+			
 			var found = false;
 			for(var i=0;i<allPeripheral.length;i++){
 			  if(allPeripheral[i].address==peripheral.address){
@@ -65,6 +65,8 @@ var allServices = [ CONTROL_UUID,
 			  }
 			}
 			if(!found){	
+                console.log("connected:"+peripheralCount+" "+peripheral.address);
+                peripheralCount++;
 				allPeripheral.push(peripheral);
 			}
 			peripheral.discoverServices([SERVICE_UUID], function(error, services) {
