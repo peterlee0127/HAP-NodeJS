@@ -16,9 +16,19 @@ var LED_NAME_UUID               = 'fff8';  // set the name of LED
 var LED_NAME_RESPONSE_UUID      = 'fff9';  // notify the name of LED
 var EFFECT_UUID                 = 'fffc';  // set the effect of color change
 
-var allDevices = [];
-var allPeripheral = [];
-var peripheralCount = 0;
+class YeeLight {
+    setAddress(addr){
+        this.address = addr;
+    };
+    setDevice(dev){
+        this.device = dev;
+    }
+    setCharacteristics(chara){
+        this.characteristics = chara;
+    }
+}
+
+var devices = [];
 
 var allServices = [ CONTROL_UUID,
     DELAY_UUID,
@@ -30,9 +40,6 @@ var allServices = [ CONTROL_UUID,
     LED_NAME_UUID,
     LED_NAME_RESPONSE_UUID,
     EFFECT_UUID             ];
-
-    var numberOfYeelights = 0;
-    exports.numberOfYeelights = numberOfYeelights;
 
     noble.on('stateChange', function(state) {
         if (state === 'poweredOn'){
@@ -53,66 +60,67 @@ var allServices = [ CONTROL_UUID,
             if(localName!="Yeelight Blue II") {
                 return
             }
+            var found = false;
+			for(var i=0;i<devices.length;i++){
+			  if(devices[i].address==peripheral.address){
+			 	found = true;
+			    return;
+              }
+			}
+            
             setTimeout(function(){
-                peripheral.connect(function(error){
-                    if(error){console.log(error);}
+            
+
+            peripheral.connect(function(error){
+            
+            if(error){console.log(error);}
                 
 			
-			var found = false;
-			for(var i=0;i<allPeripheral.length;i++){
-			  if(allPeripheral[i].address==peripheral.address){
-			 	found = true;
-			  }
-			}
+			
 			if(!found){	
-                console.log("connected:"+peripheralCount+" "+peripheral.address);
-                peripheralCount++;
-				allPeripheral.push(peripheral);
-			}
+                console.log("now connected:"+peripheral.address);
+			    var yeelight = new YeeLight();
+                yeelight.setDevice(peripheral);
+                yeelight.setAddress(peripheral.address);
+            }
+
 			peripheral.discoverServices([SERVICE_UUID], function(error, services) {
                         var deviceInformationService = services[0];
                         deviceInformationService.discoverCharacteristics(allServices, function(error, characteristics) {
-                            var device = [];
+                            var characteristic = [];
                             for (var i in characteristics) {
-                                device.push(characteristics[i]);
+                                characteristic.push(characteristics[i]);
                             }
-                            allDevices.push(device);
-
+                            yeelight.setCharacteristics(characteristic);
+                            devices.push(yeelight)
                         });
                     });
                 });
             },300);
             peripheral.on('disconnect', function(){
-     		peripheralCount--;           
-                console.log("peripheral disconnect:"+peripheral.address+ "  connected:"+peripheralCount);
-		for(var i=0;i<allPeripheral.length;i++) {
-		  allPeripheral[i].disconnect(function(err){
-		   });
-		}
-  			if(peripheralCount==0){	    
-            		 noble.stopScanning();
-				setTimeout(function(){
-		allPeripheral = [];
-		allDevices = [];
-  				console.log("restart");  
-  				  startDiscover(); // will crash here,for trick rescan,use nodejs forever module
-			},3000);
-			}
+                    noble.stopScanning();
+                    setTimeout(function(){
+                            devices = [];
+                            console.log("restart");  
+                            startDiscover(); // will crash here,for trick rescan,use nodejs forever module
+                            exit();
+                            },3000);
             });
         });
     }
 
     exports.startDiscover = startDiscover;
 
-    exports.disConnectAll = function disConnectAll(){
+    function disConnectAll(){
         for (var index in noble._peripherals){
             noble._peripherals[index].disconnect(function(err){
                 if(err){console.log(err); }
             });
         }
-        numberOfYeelights = 0;
+        console.log("disConnectAll");
         allDevices = [];
     };
+    exports.disConnectAll = disConnectAll
 
 
     function findForCharacters(characters,Service_UUID){
@@ -128,16 +136,13 @@ var allServices = [ CONTROL_UUID,
 
     };
 
-    exports.TurnOn = function turnOn(){
-        for(var index in allDevices){
-
-            var chcharacter=findForCharacters(allDevices[index],CONTROL_UUID);
-               chcharacter.write(new Buffer("CLTMP 6500,100,,,%"), false, function(error) {
-                 if(error){console.log(error);}
-               });
-            //CLTMP 6500,45,,,,,,%
+    exports.TurnOn = function turnOn(address){
+        var dev = getDevice(address);        
+        if(dev){
+            var character=findForCharacters(dev.characteristics,CONTROL_UUID);
+            character.write(new Buffer("CLTMP 6500,100,,,%"), false, function(error) { });
         }
-	};
+    };
 
 	exports.changeBrightness = function changeBrightness(brightness) {
 		var command = util.format("CLTMP 6500,%d",brightness);
@@ -145,6 +150,7 @@ var allServices = [ CONTROL_UUID,
 			command+=',';
 		}
 		command+='%';
+        return;
 	     for(var index in allDevices){
             var chcharacter=findForCharacters(allDevices[index],CONTROL_UUID);
                chcharacter.write(new Buffer(command), false, function(error) {
@@ -154,12 +160,23 @@ var allServices = [ CONTROL_UUID,
         }
 
 	}
-    exports.TurnOff = function turnOff(){
-        for(var index in allDevices){
-            var chcharacter=findForCharacters(allDevices[index],CONTROL_UUID);
-            controlLight(chcharacter,null,null,null,0);
+    function getDevice(address) {
+        for(var index in devices){
+            var dev = devices[index];
+            if(dev.address==address){
+                return dev;
+            }
         }
-	};
+    }
+    exports.getDevice = getDevice();
+    
+    exports.TurnOff = function turnOff(address){
+        var dev = getDevice(address);
+        if(dev){
+            var chcharacter=findForCharacters(dev.characteristics,CONTROL_UUID);
+            controlLight(chcharacter,null,null,null,0);
+	    }
+    };
 
     function hslToRgb(h, s, l){
    //hue,saturation,light;
