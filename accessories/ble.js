@@ -28,6 +28,8 @@ class YeeLight {
     }
 }
 
+var setupTime = 3;
+var lock = false;
 var devices = [];
 
 var allServices = [ CONTROL_UUID,
@@ -46,6 +48,7 @@ var allServices = [ CONTROL_UUID,
             startDiscover();
         }
         else{
+            console.log("ble state:"+state);
             // noble.stopScanning();
         }
     });
@@ -60,25 +63,26 @@ var allServices = [ CONTROL_UUID,
             if(localName!="Yeelight Blue II") {
                 return
             }
+            console.log(macAddress);
             var found = false;
 			for(var i=0;i<devices.length;i++){
 			  if(devices[i].address==peripheral.address){
 			 	found = true;
-			    return;
               }
 			}
+            if(found){
+                return;
+                console.log(found);
+            }
             
             setTimeout(function(){
             
 
             peripheral.connect(function(error){
-            
-            if(error){console.log(error);}
-                
-			
+                if(error){console.log(error);}
 			
 			if(!found){	
-                console.log("now connected:"+peripheral.address);
+                console.log("connected:"+peripheral.address);
 			    var yeelight = new YeeLight();
                 yeelight.setDevice(peripheral);
                 yeelight.setAddress(peripheral.address);
@@ -98,13 +102,19 @@ var allServices = [ CONTROL_UUID,
                 });
             },300);
             peripheral.on('disconnect', function(){
-                    noble.stopScanning();
+                    if(lock){
+                        return;
+                    }
+                    lock = true;
+                    disConnectAll();
                     setTimeout(function(){
-                            devices = [];
-                            console.log("restart");  
-                            startDiscover(); // will crash here,for trick rescan,use nodejs forever module
-                            exit();
-                            },3000);
+                        lock = false;
+                        console.log("restart");  
+                        devices = [];
+                        noble.stopScanning();
+                        exit();
+                      //  startDiscover(); // will crash here,for trick rescan,use nodejs forever module
+                    },12000);
             });
         });
     }
@@ -118,7 +128,6 @@ var allServices = [ CONTROL_UUID,
             });
         }
         console.log("disConnectAll");
-        allDevices = [];
     };
     exports.disConnectAll = disConnectAll
 
