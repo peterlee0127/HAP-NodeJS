@@ -63,7 +63,7 @@ var allServices = [ CONTROL_UUID,
             if(localName!="Yeelight Blue II") {
                 return
             }
-            console.log(macAddress);
+            console.log("discover:"+macAddress);
             var found = false;
 			for(var i=0;i<devices.length;i++){
 			  if(devices[i].address==peripheral.address){
@@ -72,7 +72,6 @@ var allServices = [ CONTROL_UUID,
 			}
             if(found){
                 return;
-                console.log(found);
             }
             
             setTimeout(function(){
@@ -81,14 +80,14 @@ var allServices = [ CONTROL_UUID,
             peripheral.connect(function(error){
                 if(error){console.log(error);}
 			
-			if(!found){	
-                console.log("connected:"+peripheral.address);
-			    var yeelight = new YeeLight();
-                yeelight.setDevice(peripheral);
-                yeelight.setAddress(peripheral.address);
-            }
+                if(!found){	
+                    console.log("connected:"+peripheral.address);
+                    var yeelight = new YeeLight();
+                    yeelight.setDevice(peripheral);
+                    yeelight.setAddress(peripheral.address);
+                }
 
-			peripheral.discoverServices([SERVICE_UUID], function(error, services) {
+                peripheral.discoverServices([SERVICE_UUID], function(error, services) {
                         var deviceInformationService = services[0];
                         deviceInformationService.discoverCharacteristics(allServices, function(error, characteristics) {
                             var characteristic = [];
@@ -114,7 +113,7 @@ var allServices = [ CONTROL_UUID,
                         noble.stopScanning();
                         exit();
                       //  startDiscover(); // will crash here,for trick rescan,use nodejs forever module
-                    },12000);
+                    }, 4000);
             });
         });
     }
@@ -153,19 +152,20 @@ var allServices = [ CONTROL_UUID,
         }
     };
 
-	exports.changeBrightness = function changeBrightness(brightness) {
-		var command = util.format("CLTMP 6500,%d",brightness);
-		for(var i=command.length; i<17; i++) {
-			command+=',';
-		}
-		command+='%';
-        return;
-	     for(var index in allDevices){
-            var chcharacter=findForCharacters(allDevices[index],CONTROL_UUID);
-               chcharacter.write(new Buffer(command), false, function(error) {
+	exports.changeBrightness = function changeBrightness(address,brightness) {
+        var dev = getDevice(address);
+        if(dev) {
+		    var command = util.format("CLTMP 6500,%d",brightness);
+		    for(var i=command.length; i<17; i++) {
+			    command+=',';
+		    }
+		    command+='%';
+            var chcharacter=findForCharacters(dev.characteristics,CONTROL_UUID);
+            chcharacter.write(new Buffer(command), false, function(error) {
                  if(error){console.log(error);}
-               });
+            });
             //CLTMP 6500,45,,,,,,%
+
         }
 
 	}
