@@ -24,7 +24,6 @@ var LightController = {
     this.power = status;
     if(status){
         ble.TurnOn("54:4a:16:1f:b2:2f");
-        ble.changeBrightness(100);
     }else{
         ble.TurnOff("54:4a:16:1f:b2:2f");
     }
@@ -37,7 +36,8 @@ var LightController = {
 
   setBrightness: function(brightness) { //set brightness
     if(this.outputLogs) console.log("Setting '%s' brightness to %s", this.name, brightness);
-    ble.changeBrightness(this.brightness);
+    //ble.changeBrightness("54:4a:16:1f:b2:2f",this.brightness);
+    setTimeout(ble.changeBrightness,100,"54:4a:16:1f:b2:2f",this.brightness);
     this.brightness = brightness;
   },
 

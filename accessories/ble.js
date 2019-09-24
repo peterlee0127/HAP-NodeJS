@@ -45,14 +45,23 @@ var allServices = [ CONTROL_UUID,
 
     noble.on('stateChange', function(state) {
         if (state === 'poweredOn'){
-            startDiscover();
+	    setTimeout(startDiscover,1000);
+	    setTimeout(checkNumOfLight,15000);
+            setInterval(checkNumOfLight, 1000*60*10);
         }
         else{
             console.log("ble state:"+state);
             // noble.stopScanning();
         }
     });
-
+    
+    function checkNumOfLight() {
+	if(devices.length!=3 || Object.keys(noble._peripherals).length != 3) {
+  		console.error("not connect to 3, exit");
+        	crash 
+	}
+   }
+   
     function startDiscover(){
         console.log("startDiscover..");
         allPeripheral = [];
@@ -63,6 +72,9 @@ var allServices = [ CONTROL_UUID,
             if(localName!="Yeelight Blue II") {
                 return
             }
+	    if(macAddress=='544a161fa6cd'){
+		return;
+	    }
             console.log("discover:"+macAddress);
             var found = false;
 			for(var i=0;i<devices.length;i++){
@@ -99,7 +111,7 @@ var allServices = [ CONTROL_UUID,
                         });
                     });
                 });
-            },300);
+            },1500);
             peripheral.on('disconnect', function(){
                     if(lock){
                         return;
@@ -148,18 +160,21 @@ var allServices = [ CONTROL_UUID,
         var dev = getDevice(address);        
         if(dev){
             var character=findForCharacters(dev.characteristics,CONTROL_UUID);
-            character.write(new Buffer("CLTMP 6500,100,,,%"), false, function(error) { });
+            character.write(new Buffer("CLTMP 6500,100,,,%"), false, function(error) { 
+			if(error){console.error(error)};
+		});
+
         }
     };
 
-	exports.changeBrightness = function changeBrightness(address,brightness) {
-        var dev = getDevice(address);
-        if(dev) {
-		    var command = util.format("CLTMP 6500,%d",brightness);
-		    for(var i=command.length; i<17; i++) {
-			    command+=',';
-		    }
-		    command+='%';
+    exports.changeBrightness = function changeBrightness(address,brightness) {
+    var dev = getDevice(address);
+     if(dev) {
+	     var command = util.format("CLTMP 6500,%d",brightness);
+	     for(var i=command.length; i<17; i++) {
+		     command+=',';
+	     }
+	     command+='%';
             var chcharacter=findForCharacters(dev.characteristics,CONTROL_UUID);
             chcharacter.write(new Buffer(command), false, function(error) {
                  if(error){console.log(error);}
@@ -237,6 +252,6 @@ var allServices = [ CONTROL_UUID,
             command += ',';
         }
         characteristics.write(new Buffer(command), false, function(error) {
-            if(error){console.log(error);}
+            if(error){console.error(error);}
         });
     }
